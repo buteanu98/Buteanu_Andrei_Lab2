@@ -6,17 +6,37 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Buteanu_Andrei_Lab2.Models;
+using Microsoft.EntityFrameworkCore;
+using Buteanu_Andrei_Lab2.Data;
+using Buteanu_Andrei_Lab2.Models.LibraryViewModel;
 
 namespace Buteanu_Andrei_Lab2.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+
+        public async Task<ActionResult> Statistics()
         {
-            _logger = logger;
+            IQueryable<OrderGroup> data =
+            from order in _context.Orders
+            group order by order.OrderDate into dateGroup
+            select new OrderGroup()
+            {
+                OrderDate = dateGroup.Key,
+                BookCount = dateGroup.Count()
+            };
+            return View(await data.AsNoTracking().ToListAsync());
         }
+
+        private readonly LibraryContext _context;
+        public HomeController(LibraryContext context)
+        {
+            _context = context;
+        }
+        
+
+
 
         public IActionResult Index()
         {
